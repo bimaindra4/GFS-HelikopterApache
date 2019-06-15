@@ -1,21 +1,13 @@
-// Compile: g++ 3d.cpp -o 3d -lglut -lGL -lGLU
+// Compile: g++ filename.cpp -o filename -lglut -lGL -lGLU
 
 #include "GL/glut.h"
-
+#include "math.h"
 #define checkImageWidth 64
 #define checkImageHeight 64
 
 GLUquadric *q = gluNewQuadric();
-GLfloat camY = 0.0;
-GLfloat camX = -3.0;
-GLfloat angle = 1;
-GLfloat direction = 1;
-static int slices = 5;
-static int stacks = 5;
 
-/*  Create checkerboard texture  */
 static GLubyte checkImage[checkImageHeight][checkImageWidth][4];
-
 static GLuint texName;
 
 void makeCheckImage(void)
@@ -32,6 +24,7 @@ void makeCheckImage(void)
       }
    }
 }
+
 
 void initGL()
 {
@@ -72,99 +65,12 @@ void initGL()
     checkImage);
 }
 
-void drawAxis()
-{
-  glBegin(GL_LINES);
-  glColor3f(1,0,0); // red
-  glVertex3f(0,0,0);
-  glVertex3f(3,0,0); // x
-  glColor3f(0,0,1); // blue
-  glVertex3f(0,0,0);
-  glVertex3f(0,3,0); // y
-  glColor3f(0,1,0); // green
-  glVertex3f(0,0,0);
-  glVertex3f(0,0,3); // z
-  glEnd();
-}
-
-void display()
-{
-   const double t = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
-
-  gluLookAt(
-    camX, camY, 0,
-    0,0,-15,
-    0,1,0);
-    const double a = t*90.0;
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-    glPushMatrix();
-    glColor3d(0,1,0);
-        glTranslated(-1,0,-10);
-        glRotated(90,0,1,0);
-    gluCylinder(q, 2, 0.5, 2, 10, 10);
-    glTranslated(0,0,-2);
-    gluCylinder(q, 2, 2, 2, 10, 10);
-    glPopMatrix();
-
-    glPushMatrix();
-    glColor3d(0,1,0);
-        glTranslated(0,0,-10);
-        glRotated(90,0,1,0);
-    gluCylinder(q, 1, 0, 6, 4, 8);
-    glPopMatrix();
-
-    glPushMatrix();
-    glColor3d(0,1,0);
-        glTranslated(5.4,1,-10);
-        glBegin(GL_QUADS);
-            glVertex3f(0,1,0);
-            glVertex3f(1,1,0);
-            glVertex3f(0,-1,0);
-            glVertex3f(-1,-1,0);
-        glEnd();
-    glPopMatrix();
-
-    glPushMatrix();
-    glColor3d(0,1,0);
-        glTranslated(5.4,0,-10);
-        glBegin(GL_QUADS);
-            glVertex3f(-0.5,0,1.5);
-            glVertex3f(0.5,0,1.5);
-            glVertex3f(0.5,0,-1.5);
-            glVertex3f(-0.5,0,-1.5);
-        glEnd();
-    glPopMatrix();
-
-    glPushMatrix();
-    glColor3d(1,0,0);
-        glTranslated(5.8,1.8,-9.9);
-        glRotatef(angle, 0, 0, 1);
-        glBegin(GL_QUADS);
-            glVertex3f(-0.2,1,0);
-            glVertex3f(0.2,1,0);
-            glVertex3f(0.2,-1,0);
-            glVertex3f(-0.2,-1,0);
-        glEnd();
-    glPopMatrix();
-
-
-
-
-  angle += direction*8;
-
-  glutSwapBuffers();
-}
-
 void timer(int value)
 {
   glutPostRedisplay();
   glutTimerFunc(15, timer, 0);
 }
+
 
 void reshape(GLsizei width, GLsizei height)
 {
@@ -177,36 +83,120 @@ void reshape(GLsizei width, GLsizei height)
   gluPerspective(45.0f, aspect, 0.1f, 100.0f);
 }
 
-void keyControl(int k, int x, int y)
+void kepala()
 {
-  switch(k) {
-    case GLUT_KEY_UP: camY ++; break;
-    case GLUT_KEY_DOWN: camY --; break;
-    case GLUT_KEY_LEFT: camX --; break;
-    case GLUT_KEY_RIGHT: camX ++; break;
-  }
+    glPushMatrix();
+    glColor3d(0,1,0);
+        glTranslated(-1,0,-10);
+        glRotated(90,0,1,0);
+    gluCylinder(q, 2, 0.5, 2, 5, 10);
+    glTranslated(0,0,-3);
+    gluCylinder(q, 2, 2, 3, 5, 10);
+    glTranslated(0,0,-1.5);
+    gluCylinder(q, 1, 2, 1.5, 5, 1);
+    glTranslated(0,0,-0.4);
+    gluCylinder(q, 0, 1, 0.4, 5, 1);
+    glPopMatrix();
 }
 
-void mouseControl(int button, int state, int x, int y)
+void sikilan()
 {
-  switch(button) {
-    case GLUT_LEFT_BUTTON: direction = -direction; break;
-  }
+    glPushMatrix();
+        glTranslated(-4,-1.5,-11);
+        glRotated(90,1,0,0);
+        glRotated(45,0,1,0);
+    gluCylinder(q, 0.05, 0.05, 1, 10, 10);
+    glPopMatrix();
+    glPushMatrix();
+        glTranslated(-2,-1.5,-11);
+        glRotated(90,1,0,0);
+        glRotated(45,0,1,0);
+    gluCylinder(q, 0.05, 0.05, 1, 10, 10);
+    glPopMatrix();
+    glPushMatrix();
+        glTranslated(-4,-1.5,-9);
+        glRotated(90,1,0,0);
+        glRotated(45,0,1,0);
+    gluCylinder(q, 0.05, 0.05, 1, 10, 10);
+    glPopMatrix();
+    glPushMatrix();
+        glTranslated(-2,-1.5,-9);
+        glRotated(90,1,0,0);
+        glRotated(45,0,1,0);
+    gluCylinder(q, 0.05, 0.05, 1, 10, 10);
+    glPopMatrix();
+    glPushMatrix();
+        glTranslated(-1.3,-2.2,-11);
+    gluCylinder(q, 0.05, 0.05, 2, 10, 10);
+        glTranslated(-2,0,0);
+    gluCylinder(q, 0.05, 0.05, 2, 10, 10);
+        glRotated(90,0,1,0);
+    gluCylinder(q, 0.05, 0.05, 2, 10, 10);
+        glTranslated(-2,0,0);
+    gluCylinder(q, 0.05, 0.05, 2, 10, 10);
+    glPopMatrix();
+}
+
+void ekor()
+{
+    glPushMatrix();
+    glColor3d(0,1,0);
+        glTranslated(0,0,-10);
+        glRotated(90,0,1,0);
+    gluCylinder(q, 1, 0, 6, 4, 8);
+    glPopMatrix();
+    glPushMatrix();
+    glColor3d(0,1,0);
+        glTranslated(5.4,1,-10);
+        glBegin(GL_QUADS);
+            glVertex3f(0,1,0);
+            glVertex3f(1,1,0);
+            glVertex3f(0,-1,0);
+            glVertex3f(-1,-1,0);
+        glEnd();
+    glPopMatrix();
+    glPushMatrix();
+    glColor3d(0,1,0);
+        glTranslated(5.4,0,-10);
+        glBegin(GL_QUADS);
+            glVertex3f(-0.5,0,1.5);
+            glVertex3f(0.5,0,1.5);
+            glVertex3f(0.5,0,-1.5);
+            glVertex3f(-0.5,0,-1.5);
+        glEnd();
+    glPopMatrix();
+}
+
+void display()
+{
+   const double t = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  glTranslated(0,0,-10);
+
+  kepala();
+  sikilan();
+  ekor();
+
+  //kurang kamera dan baling-baling
+
+  glFlush();
+  glutSwapBuffers();
 }
 
 int main(int argc, char **argv)
 {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
-  glutInitWindowSize(640, 480);
-  glutInitWindowPosition(50, 50);
+  glutInitWindowSize(600, 600);
+  glutInitWindowPosition(100, 100);
   glutCreateWindow("Helicopter");
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
   initGL();
   glutTimerFunc(0, timer, 0);
-  glutSpecialFunc(keyControl);
-  glutMouseFunc(mouseControl);
   glutMainLoop();
   return 0;
 }
