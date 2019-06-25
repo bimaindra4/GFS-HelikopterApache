@@ -6,6 +6,7 @@
 
 float rx=-90.0f, ry=0.0f, rz=-180.0f;
 float p=3.0f, l=10.0f, t=3.5f;
+float sudut_ba=0;
 
 GLUquadric *q = gluNewQuadric();
 
@@ -117,6 +118,18 @@ void kubus(float p, float l, float t) {
     glEnd();
 }
 
+void tabung(float r, float t) {
+    float BODY_LENGTH = t;
+    float BODY_RADIUS = r;
+    int SLICES = 120;
+    int STACKS = 120;
+    GLUquadric *q = gluNewQuadric();
+    gluCylinder(q, BODY_RADIUS, BODY_RADIUS, BODY_LENGTH, SLICES, STACKS);
+    gluDisk(q, 0.0f, BODY_RADIUS, SLICES, STACKS);
+    glTranslatef(0.0f, 0.0f, BODY_LENGTH);
+    gluDisk(q, 0.0f, BODY_RADIUS, SLICES, STACKS);
+}
+
 void kerucut(float rb, float rt, float t) {
     float BODY_LENGTH = t;
     float BODY_RADIUS_BOTTOM = rb;
@@ -128,6 +141,49 @@ void kerucut(float rb, float rt, float t) {
     gluDisk(q, 0.0f, BODY_RADIUS_BOTTOM, SLICES, STACKS);
     glTranslatef(0.0f, 0.0f, BODY_LENGTH);
     gluDisk(q, 0.0f, BODY_RADIUS_TOP, SLICES, STACKS);
+}
+
+void baling_atas() {
+  float pjg_sayap = 6.0f;
+  glPushMatrix();
+    glTranslatef(0.0f,0.0f,-1.0f);
+    kerucut(0.7f, 0.5f, 0.5f);
+    tabung(0.3f, 1.0f);
+  glPopMatrix();
+  
+  glPushMatrix();
+    glTranslatef(0.0f,0.0f,0.0f);
+    glRotatef(sudut_ba, 0.0f, 0.0f, 1.0f);
+    glBegin(GL_QUADS);
+      glVertex3f(0.25f,0.25f,0.0f);
+      glVertex3f(0.25f,-0.25f,0.0f);
+      glVertex3f(pjg_sayap,-0.5f,0.0f);
+      glVertex3f(pjg_sayap,0.5f,0.0f);
+    glEnd();
+    glBegin(GL_QUADS);
+      glVertex3f(0.25f,0.25f,0.0f);
+      glVertex3f(-0.25f,0.25f,0.0f);
+      glVertex3f(-0.5f,pjg_sayap,0.0f);
+      glVertex3f(0.5f,pjg_sayap,0.0f);
+    glEnd();
+    glBegin(GL_QUADS);
+      glVertex3f(-0.25f,0.25f,0.0f);
+      glVertex3f(-0.25f,-0.25f,0.0f);
+      glVertex3f(-pjg_sayap,-0.5f,0.0f);
+      glVertex3f(-pjg_sayap,0.5f,0.0f);
+    glEnd();
+    glBegin(GL_QUADS);
+      glVertex3f(-0.25f,-0.25f,0.0f);
+      glVertex3f(0.25f,-0.25f,0.0f);
+      glVertex3f(0.5f,-pjg_sayap,0.0f);
+      glVertex3f(-0.5f,-pjg_sayap,0.0f);
+    glEnd();
+  glPopMatrix();
+
+  sudut_ba += 50;
+  if(sudut_ba == 360) {
+      sudut_ba = 0;
+  }
 }
 
 void weapon_sts() {
@@ -197,7 +253,7 @@ void weapon_sts() {
 }
 
 void sayap() {
-    float ps=5.0f, ls=2.5f, ts=0.1f;
+    float ps=5.0f, ls=2.0f, ts=0.1f;
 
     // sayap kanan
     glPushMatrix();
@@ -409,6 +465,7 @@ void display() {
     ekor();
   glPopMatrix();
   
+  // weapon station
   glPushMatrix();
     glTranslatef(5.0f,-5.0f,-12.25f);
     glRotatef(-90, 0.0f, 1.0f, 0.0f);
@@ -416,11 +473,20 @@ void display() {
     weapon_sts();
   glPopMatrix();
 
+  // sayap
   glPushMatrix();
     glTranslatef(4.0f,-3.0f,-12.5f);
     glRotatef(-90, 0.0f, 1.0f, 0.0f);
     axis();
     sayap();
+  glPopMatrix();
+
+  // kinciran pring
+  glPushMatrix();
+    glTranslatef(-3.0f,1.5f,-9.0f);
+    glRotatef(-90, 1.0f, 0.0f, 0.0f);
+    axis();
+    baling_atas();
   glPopMatrix();
 
   glFlush();
