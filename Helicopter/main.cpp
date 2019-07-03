@@ -4,6 +4,8 @@
 #define checkImageWidth 64
 #define checkImageHeight 64
 
+
+float angle=0;
 float rx=-90.0f, ry=0.0f, rz=-180.0f;
 float p=3.0f, l=10.0f, t=3.5f;
 float sudut_ba=0;
@@ -251,7 +253,7 @@ void baling_atas() {
     kerucut(0.7f, 0.5f, 0.5f);
     tabung(0.3f, 1.0f);
   glPopMatrix();
-  
+
   glPushMatrix();
     glTranslatef(0.0f,0.0f,0.0f);
     glRotatef(sudut_ba, 0.0f, 0.0f, 1.0f);
@@ -285,6 +287,20 @@ void baling_atas() {
   if(sudut_ba == 360) {
       sudut_ba = 0;
   }
+}
+
+void baling_belakang() {
+glPushMatrix();
+    glColor3d(0,0,1);
+        glTranslated(5.8,1.8,-9.9);
+        glRotatef(angle, 0, 0, 1);
+        glBegin(GL_QUADS);
+            glVertex3f(-0.2,1,0);
+            glVertex3f(0.2,1,0);
+            glVertex3f(0.2,-1,0);
+            glVertex3f(-0.2,-1,0);
+        glEnd();
+    glPopMatrix();
 }
 
 void weapon_sts() {
@@ -452,10 +468,11 @@ void kepala() {
       glColor3d(0,1,0);
       glTranslated(-1,0,-10);
       glRotated(90,0,1,0);
-      gluCylinder(q, 2, 0.5, 2, 5, 10);
       glTranslated(0,0,-3);
-      gluCylinder(q, 2, 2, 3, 5, 10);
-      glTranslated(0,0,-1.5);
+      gluCylinder(q, 2, 2, 3.5, 5, 10);
+      glTranslated(0,0,3.5);
+      gluCylinder(q, 2, 0.5, 2, 5, 10);
+      glTranslated(0,0,-5);
       gluCylinder(q, 1, 2, 1.5, 5, 1);
       glTranslated(0,0,-0.4);
       gluCylinder(q, 0, 1, 0.4, 5, 1);
@@ -507,7 +524,6 @@ void ekor() {
     gluCylinder(q, 1, 0, 6, 4, 8);
     glPopMatrix();
     glPushMatrix();
-    glColor3d(0,1,0);
         glTranslated(5.4,1,-10);
         glBegin(GL_QUADS);
             glVertex3f(0,1,0);
@@ -517,7 +533,6 @@ void ekor() {
         glEnd();
     glPopMatrix();
     glPushMatrix();
-    glColor3d(0,1,0);
         glTranslated(5.4,0,-10);
         glBegin(GL_QUADS);
             glVertex3f(-0.5,0,1.5);
@@ -550,8 +565,9 @@ void helikopter() {
     kepala();
     sikilan();
     ekor();
+    baling_belakang();
   glPopMatrix();
-  
+
   // weapon station
   glPushMatrix();
     glTranslatef(5.0f,-5.0f,-12.25f);
@@ -608,7 +624,8 @@ void display() {
   glPushMatrix();
     BigBox();
   glPopMatrix();
-  
+
+  angle += 25;
   glFlush();
   glutSwapBuffers();
 }

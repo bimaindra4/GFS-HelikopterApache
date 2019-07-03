@@ -222,3 +222,8 @@
 1341006774 c:\program files (x86)\codeblocks\mingw\include\math.h
 	<_mingw.h>
 
+1562117170 source:c:\users\ahe\documents\github\gfs-helikopterapache\helicopter\main.cpp
+	"windows.h"
+	"GL/glut.h"
+	"math.h"
+
