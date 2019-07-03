@@ -7,6 +7,52 @@
 float rx=-90.0f, ry=0.0f, rz=-180.0f;
 float p=3.0f, l=10.0f, t=3.5f;
 float sudut_ba=0;
+float Cx = 0.0f, Cy = 2.5f, Cz = 0.0f;
+float Lx = 0.0f, Ly = 2.5f, Lz = -20.0f;
+float angle_depanBelakang = 0.0f;
+float angle_depanBelakang2 = 0.0f;
+float angle_samping = 0.0f;
+float angle_samping2 = 0.0f;
+float angle_vertikal = 0.0f;
+float angle_vertikal2 = 0.0f;
+float silinderX = 0.0f, silinderZ = 0.0f, silinderY = 0.0f;
+bool ori = true,
+  silinderZP = false, silinderZM = false,
+  silinderYP = false, silinderYM = false,
+  silinderXP = false, silinderXM = false,
+kamera = false, kamera2 = false, kamera3 = false, kamera4 = false, kamera5 = false, kamera6 = false;
+
+float toRadians(float angle) {
+  return angle * M_PI / 180;
+}
+
+class Vector{
+  public:
+  float x, y, z;
+  void set_values (float startX, float startY, float startZ) {
+        x = startX;
+        y = startY;
+        z = startZ;
+    }
+
+    void vectorRotation(Vector refs, float angle) {
+        Vector temp = refs;
+        float magnitude = sqrt(pow(temp.x, 2) + pow(temp.y, 2) + pow(temp.z, 2));
+        temp.x = temp.x / magnitude;
+        temp.y = temp.y / magnitude;
+        temp.z = temp.z / magnitude;
+        float dot_product = (x * temp.x)+(y * temp.y)+(z * temp.z);
+        float cross_product_x = (y * temp.z) - (temp.z * z);
+        float cross_product_y = -((x * temp.z) - (z * temp.x));
+        float cross_product_z = (x * temp.y) - (y * temp.x);
+        float last_factor_rodrigues = 1.0f - cos(toRadians(fmod(angle, 360.0f)));
+        x = (x * cos(toRadians(fmod(angle, 360.0f)))) + (cross_product_x * sin(toRadians(fmod(angle, 360.0f)))) + (dot_product * last_factor_rodrigues * x);
+        y = (y * cos(toRadians(fmod(angle, 360.0f)))) + (cross_product_y * sin(toRadians(fmod(angle, 360.0f)))) + (dot_product * last_factor_rodrigues * y);
+        z = (z * cos(toRadians(fmod(angle, 360.0f)))) + (cross_product_z * sin(toRadians(fmod(angle, 360.0f)))) + (dot_product * last_factor_rodrigues * z);
+  }
+};
+
+Vector depanBelakang, samping, vertikal;
 
 GLUquadric *q = gluNewQuadric();
 
@@ -27,7 +73,62 @@ void makeCheckImage(void) {
    }
 }
 
+
+static void BigBox(){
+  float amb[]={0.0f, 0.5f, 0.0f, 1.0f};
+  float diff[]={0.0f, 0.5f, 0.0f, 1.0f};
+  float spec[]={0.0f, 0.5f, 0.0f, 1.0f};
+  float shine=0.0f;
+  glMaterialfv(GL_FRONT,GL_AMBIENT,amb);
+  glMaterialfv(GL_FRONT,GL_DIFFUSE,diff);
+  glMaterialfv(GL_FRONT,GL_SPECULAR,spec);
+  glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shine);
+  glBegin(GL_QUADS);
+  glVertex3f(-10000.0f, 0.0f, -10000.0f);
+  glVertex3f(10000.0f, 0.0f, -10000.0f);
+  glVertex3f(10000.0f, 0.0f, 10000.0f);
+  glVertex3f(-10000.0f, 0.0f, 10000.0f);
+  glEnd();
+}
+
+void vectorMovement(Vector toMove, float magnitude, float direction){
+  float speedX = toMove.x * magnitude * direction;
+  float speedY = toMove.y * magnitude * direction;
+  float speedZ= toMove.z * magnitude * direction;
+  Cx += speedX;
+  Cy += speedY;
+  Cz += speedZ;
+  Lx += speedX;
+  Ly += speedY;
+  Lz += speedZ;
+}
+
+void cameraRotation(Vector refer, double angle){
+  float M = sqrt(pow(refer.x, 2) + pow(refer.y, 2) + pow(refer.z, 2));
+  float Up_x1 = refer.x / M;
+  float Up_y1 = refer.y / M;
+  float Up_z1 = refer.z / M;
+  float VLx = Lx - Cx;
+  float VLy = Ly - Cy;
+  float VLz = Lz - Cz;
+  float dot_product = (VLx * Up_x1) + (VLy * Up_y1) + (VLz * Up_z1);
+  float cross_product_x = (Up_y1 * VLz) - (VLy * Up_z1);
+  float cross_product_y = -((Up_x1 * VLz) - (Up_z1 * VLx));
+  float cross_product_z = (Up_x1 * VLy) - (Up_y1 * VLx);
+  float last_factor_rodrigues = 1.0f - cos(toRadians(angle));
+  float Lx1 = (VLx * cos(toRadians(angle))) + (cross_product_x * sin(toRadians(angle))) + (dot_product * last_factor_rodrigues * VLx);
+  float Ly1 = (VLy * cos(toRadians(angle))) + (cross_product_y * sin(toRadians(angle))) + (dot_product * last_factor_rodrigues * VLy);
+  float Lz1 = (VLz * cos(toRadians(angle))) + (cross_product_z * sin(toRadians(angle))) + (dot_product * last_factor_rodrigues * VLz);
+  Lx = Lx1+Cx;
+  Ly = Ly1+Cy;
+  Lz = Lz1+Cz;
+}
+
 void initGL() {
+  depanBelakang.set_values(0.0f, 0.0f, -1.0f);
+  samping.set_values(1.0f, 0.0f, 0.0f);
+  vertikal.set_values(0.0f, 1.0f, 0.0f);
+
   GLfloat sun_direction[] = { 0.0, 2.0, -1.0, 1.0};
   GLfloat sun_intensity[] = {0.7, 0.7, 0.7, 1.0};
   GLfloat ambient_intensity[] = { 0.3, 0.3, 0.3, 1.0 };
@@ -444,21 +545,7 @@ void axis() {
     glEnd();
 }
 
-void display() {
-  const double t = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-  gluLookAt(4,4,4, 0,0,0, 0,0,1);
-
-  axis(); // primary axis
-  glTranslatef(-10.0f, -14.0f, -8.0f);
-  glRotatef(rx, 1.0f, 0.0f, 0.0f);
-  glRotatef(ry, 0.0f, 1.0f, 0.0f);
-  glRotatef(rz, 0.0f, 0.0f, 1.0f);
-  glTranslatef(3.0f, -5.0f, 5.0f);
-
-  //axis();
+void helikopter() {
   glPushMatrix();
     kepala();
     sikilan();
@@ -488,12 +575,45 @@ void display() {
     axis();
     baling_atas();
   glPopMatrix();
+}
 
+void display() {
+  const double t = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  //gluLookAt(4,4,4, 0,0,0, 0,0,1);
+  gluLookAt(Cx, Cy, Cz,
+            Lx, Ly, Lz,
+            vertikal.x, vertikal.y, vertikal.z);
+
+  /*axis(); // primary axis
+  glTranslatef(-10.0f, -14.0f, -8.0f);
+  glRotatef(rx, 1.0f, 0.0f, 0.0f);
+  glRotatef(ry, 0.0f, 1.0f, 0.0f);
+  glRotatef(rz, 0.0f, 0.0f, 1.0f);
+  glTranslatef(3.0f, -5.0f, 5.0f);*/
+
+  glRotatef(silinderZ, 1.0f, 0.0f, 0.0f);
+  glRotatef(silinderY, 0.0f, 1.0f, 0.0f);
+  glRotatef(silinderX, 0.0f, 0.0f, 1.0f);
+
+  glPushMatrix();
+    glTranslatef(0.0f, 5.0f, -15.0f);
+    glRotatef(silinderZ, 1.0f, 0.0f, 0.0f);
+    glRotatef(silinderY, 0.0f, 1.0f, 0.0f);
+    glRotatef(silinderX, 0.0f, 0.0f, 1.0f);
+    helikopter();
+  glPopMatrix();
+  glPushMatrix();
+    BigBox();
+  glPopMatrix();
+  
   glFlush();
   glutSwapBuffers();
 }
 
-void keyFunction(unsigned char key, int x, int y){
+/*void keyFunction(unsigned char key, int x, int y){
     switch(key) {
         case 68: // D
             rz += 5;
@@ -519,6 +639,127 @@ void keyControl(int k, int x, int y) {
             rx -= 5;
             break;
     }
+}
+*/
+
+void keyControl(int k, int x, int y) {
+  switch(k) {
+    case GLUT_KEY_UP: //arrow up
+      vectorMovement(vertikal, 2.0f, 1.0f);
+      break;
+    case GLUT_KEY_DOWN: //arrow down
+      vectorMovement(vertikal, 2.0f, -1.0f);
+      break;
+  }
+}
+
+void keyFunction(unsigned char key, int x, int y){
+  /* Agar fungsi ini bekerja, pastikan CapsLock menyala, kecuali tombol-tombol khusus seperti Spasi, dll */
+  switch(key){
+    case 68: // D
+      vectorMovement(samping, 2.0f, 1.0f);
+      break;
+    case 65: // A
+      vectorMovement(samping, 2.0f, -1.0f);
+      break;
+    case 87: // W
+      vectorMovement(depanBelakang, 2.0f, 1.0f);
+      break;
+    case 83: // S
+      vectorMovement(depanBelakang, 2.0f, -1.0f);
+      break;
+    case 90: // Z
+      if(silinderZP) { silinderZP = false; }
+      else { silinderZP = true; }
+      break;
+    case 88: // X
+      if(silinderZM) { silinderZM = false; }
+      else { silinderZM = true; }
+      break;
+    case 67: // C
+      if(silinderYP) { silinderYP = false; }
+      else { silinderYP = true; }
+      break;
+    case 86: // V
+      if(silinderYM) { silinderYM = false; }
+      else { silinderYM = true; }
+      break;
+    case 66: // B
+      if(silinderXP) { silinderXP = false; }
+      else { silinderXP = true; }
+      break;
+    case 78: // N
+      if(silinderXM) { silinderXM = false; }
+      else { silinderXM = true; }
+      break;
+    case 69: // E
+      if (kamera){ kamera = false; }
+      else { kamera = true; }
+      break;
+        case 82: // R
+      if (kamera2){ kamera2 = false; }
+      else { kamera2 = true; }
+      break;
+        case 84: // T
+      if (kamera3){ kamera3 = false; }
+      else { kamera3 = true; }
+      break;
+        case 89: // Y
+      if (kamera4){ kamera4 = false; }
+      else { kamera4 = true; }
+      break;
+        case 70: // F
+      if (kamera5){ kamera5 = false; }
+      else { kamera5 = true; }
+      break;
+        case 71: // G
+      if (kamera6){ kamera6 = false; }
+      else { kamera6 = true; }
+      break;
+    case 74: // J
+      angle_vertikal += 5.0f;
+      samping.vectorRotation(vertikal, angle_vertikal - angle_vertikal2);
+      // memutar vector sumbu z terhadap x (target, patokan)
+      depanBelakang.vectorRotation(vertikal, angle_vertikal - angle_vertikal2);
+      cameraRotation(vertikal, angle_vertikal - angle_vertikal2); // lookat
+      angle_vertikal2 = angle_vertikal;
+      break;
+    case 76: // L
+      angle_vertikal -= 5.0f;
+      samping.vectorRotation(vertikal, angle_vertikal - angle_vertikal2);
+      depanBelakang.vectorRotation(vertikal, angle_vertikal - angle_vertikal2);
+      cameraRotation(vertikal, angle_vertikal - angle_vertikal2);
+      angle_vertikal2 = angle_vertikal;
+      break;
+    case 75: // K
+      angle_samping -= 5.0f;
+      // vertikal.vectorRotation(samping, angle_samping - angle_samping2);
+      depanBelakang.vectorRotation(samping, angle_samping - angle_samping2);
+      cameraRotation(samping, angle_samping - angle_samping2);
+      angle_samping2 = angle_samping;
+      break;
+    case 73: // I
+      angle_samping += 5.0f;
+      // vertikal.vectorRotation(samping, angle_samping-angle_samping2);
+      depanBelakang.vectorRotation(samping, angle_samping - angle_samping2);
+      cameraRotation(samping, angle_samping - angle_samping2);
+      angle_samping2 = angle_samping;
+            break;
+        case 85: // U
+            angle_depanBelakang += 5.0f;
+            samping.vectorRotation(depanBelakang, angle_depanBelakang - angle_depanBelakang2);
+            vertikal.vectorRotation(depanBelakang, angle_depanBelakang - angle_depanBelakang2);
+            //cameraRotation(vertikal, angle_samping-angle_samping2);
+            angle_depanBelakang2 = angle_depanBelakang;
+            break;
+        case 79: // 0
+            angle_depanBelakang -= 5.0f;
+            samping.vectorRotation(depanBelakang, angle_depanBelakang - angle_depanBelakang2);
+            vertikal.vectorRotation(depanBelakang, angle_depanBelakang - angle_depanBelakang2);
+            //cameraRotation(vertikal, angle_samping-angle_samping2);
+            angle_depanBelakang2 = angle_depanBelakang;
+            break;
+  }
 }
 
 int main(int argc, char **argv) {
